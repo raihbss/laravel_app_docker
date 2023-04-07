@@ -1,0 +1,44 @@
+version: '3'
+
+networks:
+  sunya_dev_nt:
+
+services:
+  nginx_dev:
+    image: nginx:stable-alpine
+    container_name: nginx_dev
+    ports:
+      - "82:80"
+    volumes: 
+      - ./src:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - sunya_health_dev
+      - mysql
+    networks:
+      - sunya_dev_nt
+  sunya_health_dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sunya_health_dev
+    networks:
+      - sunya_dev_nt
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "4306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=laravelapp
+      - DB_USERNAME=root
+      - DB_PASSWORD=
+    networks:
+      - sunya_dev_nt
